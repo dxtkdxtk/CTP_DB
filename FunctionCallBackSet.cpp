@@ -13,20 +13,19 @@ History: see git log
 #include <iostream>
 #include <string>
 
-
-using namespace std;
+using namespace mongo;
 
 extern mongo::DBClientConnection mCon;
 extern Connection *Con;
-
+extern string database;
 //是否已获取合约
 bool FunctionCallBackSet::bIsGetInst;
 bool FunctionCallBackSet::bIsTdConnected;
 bool FunctionCallBackSet::bIsMdConnected;
 
 //是否连接CTP
-HANDLE FunctionCallBackSet::h_connected;
-HANDLE FunctionCallBackSet::h_hasInst;
+void* FunctionCallBackSet::h_connected;
+void* FunctionCallBackSet::h_hasInst;
 
 
 //当日参与交易合约信息
@@ -52,7 +51,17 @@ vector<string> FunctionCallBackSet::v_errorInfo;
 
 void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
-    cout << pDepthMarketData->LastPrice << endl;
+    BSONObjBuilder b;
+    b.append("InstrumentID", pDepthMarketData->InstrumentID);
+    b.append("OpenPrice", pDepthMarketData->OpenPrice);
+    b.append("HighestPrice", pDepthMarketData->HighestPrice);
+    b.append("LowestPrice", pDepthMarketData->LowestPrice);
+    b.append("ClosePrice", pDepthMarketData->ClosePrice);
+    b.append("Volume", pDepthMarketData->Volume);
+    b.append("LastPrice", pDepthMarketData->LastPrice);
+    b.append("UpdateTime", pDepthMarketData->UpdateTime);
+    BSONObj p = b.obj();
+    mCon.insert(database, p);
     //todo  db insert
 }
 
