@@ -18,6 +18,8 @@ using namespace mongo;
 extern mongo::DBClientConnection mCon;
 extern Connection *Con;
 extern string database;
+extern double INF;
+
 //是否已获取合约
 bool FunctionCallBackSet::bIsGetInst;
 bool FunctionCallBackSet::bIsTdConnected;
@@ -52,17 +54,32 @@ vector<string> FunctionCallBackSet::v_errorInfo;
 void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
     BSONObjBuilder b;
+    b.appendDate("UpdateTime", Date_t(GetEpochTime(pDepthMarketData->TradingDay, pDepthMarketData->UpdateTime, pDepthMarketData->UpdateMillisec)));
     b.append("InstrumentID", pDepthMarketData->InstrumentID);
-    b.append("OpenPrice", pDepthMarketData->OpenPrice);
-    b.append("HighestPrice", pDepthMarketData->HighestPrice);
-    b.append("LowestPrice", pDepthMarketData->LowestPrice);
-    b.append("ClosePrice", pDepthMarketData->ClosePrice);
+    b.append("OpenPrice", pDepthMarketData->OpenPrice > INF ? -1 : pDepthMarketData->OpenPrice);
+    b.append("HighestPrice", pDepthMarketData->HighestPrice > INF ? -1 : pDepthMarketData->HighestPrice);
+    b.append("LowestPrice", pDepthMarketData->LowestPrice > INF ? -1 : pDepthMarketData->LowestPrice);
+    b.append("ClosePrice", pDepthMarketData->ClosePrice > INF ? -1 : pDepthMarketData->ClosePrice);
+    b.append("LastPrice", pDepthMarketData->LastPrice > INF ? -1 : pDepthMarketData->LastPrice);
     b.append("Volume", pDepthMarketData->Volume);
-    b.append("LastPrice", pDepthMarketData->LastPrice);
-    b.append("UpdateTime", pDepthMarketData->UpdateTime);
-    BSONObj p = b.obj();
-    mCon.insert(database, p);
-    //todo  db insert
+    b.append("AskPrice1", pDepthMarketData->AskPrice1 > INF ? -1 : pDepthMarketData->AskPrice1);
+    b.append("BidPrice1", pDepthMarketData->BidPrice1 > INF ? -1 : pDepthMarketData->BidPrice1);
+    b.append("AskVolume1", pDepthMarketData->AskVolume1);
+    b.append("BidVolume1", pDepthMarketData->BidVolume1);
+    b.append("Turnover", pDepthMarketData->Turnover > INF ? -1 : pDepthMarketData->Turnover);
+    b.append("UpperLimitPrice", pDepthMarketData->UpperLimitPrice > INF ? -1 : pDepthMarketData->UpperLimitPrice);
+    b.append("LowerLimitPrice", pDepthMarketData->LowerLimitPrice > INF ? -1 : pDepthMarketData->LowerLimitPrice);
+    b.append("AveragePrice", pDepthMarketData->AveragePrice > INF ? -1 : pDepthMarketData->AveragePrice);
+    b.append("PreSettlementPrice", pDepthMarketData->PreSettlementPrice > INF ? -1 : pDepthMarketData->PreSettlementPrice);
+    b.append("PreClosePrice", pDepthMarketData->PreClosePrice > INF ? -1 : pDepthMarketData->PreClosePrice);
+    b.append("PreOpenInterest", pDepthMarketData->PreOpenInterest > INF ? -1 : pDepthMarketData->PreOpenInterest);
+    b.append("OpenInterest", pDepthMarketData->OpenInterest > INF ? -1 : pDepthMarketData->OpenInterest);
+    b.append("SettlementPrice", pDepthMarketData->SettlementPrice > INF ? -1 : pDepthMarketData->SettlementPrice);
+    b.append("ExchangeID", pDepthMarketData->ExchangeID);
+    b.append("ExchangeInstID", pDepthMarketData->ExchangeInstID);
+    mCon.insert(database, b.obj());
+    cout << pDepthMarketData->InstrumentID << "-----" << pDepthMarketData->UpdateTime;
+    cout << "-----" << pDepthMarketData->LastPrice << endl;
 }
 
 void __stdcall FunctionCallBackSet::OnConnect(void* pApi, CThostFtdcRspUserLoginField *pRspUserLogin, ConnectionStatus result)

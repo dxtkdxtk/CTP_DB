@@ -1,11 +1,12 @@
 #include "mainConnection.h"
 
-string database = "MarketData.testtick";
+string database = "MarketData.tick";
 
 int main()
 {
-    connectMongo("localhost");
-    connectCTP("realServer");
+    while (!connectMongo("localhost"));
+    while (!connectCTP("realServer"));
+    
     cout << "数据库写入中" << endl;
     string s;
     while (1)

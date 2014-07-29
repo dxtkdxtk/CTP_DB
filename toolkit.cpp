@@ -81,3 +81,20 @@ void GetOnFrontDisconnectedMsg(CThostFtdcRspInfoField* pRspInfo)
 		break;
 	}
 }
+
+time_t GetEpochTime(string TradingDay, string UpdateTime, int milisecond)
+{
+    struct tm t;
+    time_t res;
+    int day = atoi(TradingDay.c_str());
+    t.tm_year = day/10000 - 1900;
+    day %= 10000;
+    t.tm_mon = day / 100 - 1;
+    day %= 100;
+    t.tm_mday = day;
+
+    sscanf(UpdateTime.c_str(), "%d:%d:%d", &t.tm_hour, &t.tm_min, &t.tm_sec);
+    t.tm_isdst = -1;
+    res = mktime(&t);
+    return res*1000 + milisecond;
+}

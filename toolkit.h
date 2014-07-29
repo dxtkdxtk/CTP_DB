@@ -6,7 +6,7 @@
 #include <vector>
 #include <set>
 #include <string>
-
+#include <ctime>
 using namespace std;
 
 //输入路径，生成多级目录
@@ -18,4 +18,5 @@ void GetSetFromString(const char* szString,const char* seps,vector<string>& vct,
 //根据OnFrontDisconnected(int nReason)的值填上错误消息
 void GetOnFrontDisconnectedMsg(CThostFtdcRspInfoField* pRspInfo);
 
+time_t GetEpochTime(string TradingDay, string UpdateTime, int milisecond);
 #endif
