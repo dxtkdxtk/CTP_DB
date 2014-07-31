@@ -15,8 +15,8 @@ History: see git log
 
 using namespace mongo;
 
-extern mongo::DBClientConnection mCon;
-extern Connection *Con;
+extern mongo::DBClientConnection *mCon;
+extern Connection *con;
 extern string database;
 extern double INF;
 
@@ -54,7 +54,7 @@ vector<string> FunctionCallBackSet::v_errorInfo;
 void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
     BSONObjBuilder b;
-    b.appendDate("UpdateTime", Date_t(GetEpochTime(pDepthMarketData->TradingDay, pDepthMarketData->UpdateTime, pDepthMarketData->UpdateMillisec)));
+    b.appendDate("UpdateTime", Date_t(GetEpochTime(con->td->m_RspUserLogin.TradingDay, pDepthMarketData->UpdateTime, pDepthMarketData->UpdateMillisec)));
     b.append("InstrumentID", pDepthMarketData->InstrumentID);
     b.append("OpenPrice", pDepthMarketData->OpenPrice > INF ? -1 : pDepthMarketData->OpenPrice);
     b.append("HighestPrice", pDepthMarketData->HighestPrice > INF ? -1 : pDepthMarketData->HighestPrice);
@@ -77,9 +77,9 @@ void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThos
     b.append("SettlementPrice", pDepthMarketData->SettlementPrice > INF ? -1 : pDepthMarketData->SettlementPrice);
     b.append("ExchangeID", pDepthMarketData->ExchangeID);
     b.append("ExchangeInstID", pDepthMarketData->ExchangeInstID);
-    mCon.insert(database, b.obj());
+    mCon->insert(database, b.obj());
     cout << pDepthMarketData->InstrumentID << "-----" << pDepthMarketData->UpdateTime;
-    cout << "-----" << pDepthMarketData->LastPrice << endl;
+    cout << "-----" << pDepthMarketData->TradingDay << endl;
 }
 
 void __stdcall FunctionCallBackSet::OnConnect(void* pApi, CThostFtdcRspUserLoginField *pRspUserLogin, ConnectionStatus result)
@@ -100,64 +100,32 @@ void __stdcall FunctionCallBackSet::OnConnect(void* pApi, CThostFtdcRspUserLogin
 
 void __stdcall FunctionCallBackSet::OnDisconnect(void* pApi, CThostFtdcRspInfoField *pRspInfo, ConnectionStatus step)
 {
-    /*CLock cl(&v_csErrorInfo);
-    if (pRspInfo->ErrorID)
-    {
-        v_errorInfo.push_back(string("[OnDisconnect]: ") + string(pRspInfo->ErrorMsg));
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnErrRtnOrderAction(void* pTraderApi, CThostFtdcOrderActionField *pOrderAction, CThostFtdcRspInfoField *pRspInfo)
 {
-    /*CLock cl(&v_csErrorInfo);
-    if (pRspInfo->ErrorID)
-    {
-        v_errorInfo.push_back(string("[OnErrRtnOrderAction]: ") + string(pRspInfo->ErrorMsg));
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnErrRtnOrderInsert(void* pTraderApi, CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo)
 {
-    /*CLock cl(&v_csErrorInfo);
-    if (pRspInfo->ErrorID)
-    {
-        v_errorInfo.push_back(string("[OnErrRtnOrderInsert]: ") + string(pRspInfo->ErrorMsg));
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnRspError(void* pApi, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    /*CLock cl(&v_csErrorInfo);
-    if (pRspInfo->ErrorID)
-    {
-        v_errorInfo.push_back(string("[OnRspError]: ") + string(pRspInfo->ErrorMsg));
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnRspOrderAction(void* pTraderApi, CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    /*CLock cl(&v_csErrorInfo);
-    if (pRspInfo->ErrorID == 0)
-    {
-        v_errorInfo.push_back(string("[OnRspOrderAction]: ") + string("撤单成功!"));
-    }
-    else
-    {
-        v_errorInfo.push_back(string("[OnRspOrderAction]: ") + string(pRspInfo->ErrorMsg));
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnRspOrderInsert(void* pTraderApi, CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    /*CLock cl(&v_csErrorInfo);
-    if (pRspInfo->ErrorID == 0)
-    {
-        v_errorInfo.push_back(string("[OnRspOrderInsert]: ") + string("下单成功!"));
-    }
-    else
-    {
-        v_errorInfo.push_back(string("[OnRspOrderInsert]: ") + string(pRspInfo->ErrorMsg));
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnRspQryDepthMarketData(void* pTraderApi, CThostFtdcDepthMarketDataField *pDepthMarketData, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)

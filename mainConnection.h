@@ -9,7 +9,7 @@
 using namespace mongo;
 
 Connection *con;
-mongo::DBClientConnection mCon;
+mongo::DBClientConnection *mCon;
 double INF = 1e+100;
 
 bool CheckIsConnect()
@@ -23,12 +23,15 @@ bool connectMongo(char *addr)
     try
     {
         Sleep(5000);
-        mCon.connect(addr);
+        mCon = new mongo::DBClientConnection();
+        mCon->connect(addr);
         cout << "连接数据库成功" << endl;
     }
     catch (const mongo::DBException &e)
     {
         cout << "caught " << e.what() << endl;
+        delete mCon;
+        mCon = NULL;
         return false;
     }
     return true;
@@ -39,7 +42,7 @@ bool connectCTP(char *server)
     con = new Connection();
     if (CheckIsConnect())
     {
-        con->readInifile("E:\\workplace\\CTP_DB\\Debug\\server.ini", server);
+        con->readInifile(".\\server.ini", server);
         con->td->Connect(con->streamPath,
             con->tdServer,
             con->brokerId,
@@ -69,7 +72,6 @@ bool connectCTP(char *server)
             return false;
         }
         cout << "行情端连接成功\n" << endl;
-
         con->td->ReqQryInstrument("");
         Sleep(3000);
         cout << "获取合约成功" << endl;

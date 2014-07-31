@@ -18,5 +18,6 @@ void GetSetFromString(const char* szString,const char* seps,vector<string>& vct,
 //根据OnFrontDisconnected(int nReason)的值填上错误消息
 void GetOnFrontDisconnectedMsg(CThostFtdcRspInfoField* pRspInfo);
 
+//转换交易所时间到unix epoch time
 time_t GetEpochTime(string TradingDay, string UpdateTime, int milisecond);
 #endif

@@ -1,4 +1,5 @@
 #include "toolkit.h"
+
 #include <direct.h>
 
 void makedirs(const char* dir)
@@ -96,5 +97,10 @@ time_t GetEpochTime(string TradingDay, string UpdateTime, int milisecond)
     sscanf(UpdateTime.c_str(), "%d:%d:%d", &t.tm_hour, &t.tm_min, &t.tm_sec);
     t.tm_isdst = -1;
     res = mktime(&t);
+    //如果是半夜则加一天时间
+    if (t.tm_hour >= 0 && t.tm_hour <= 3)
+    {
+        res += 24 * 60 * 60;
+    }
     return res*1000 + milisecond;
 }

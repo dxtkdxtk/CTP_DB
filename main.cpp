@@ -1,6 +1,6 @@
 #include "mainConnection.h"
 
-string database = "MarketData.tick";
+string database = "MarketData.testtick";
 
 int main()
 {
