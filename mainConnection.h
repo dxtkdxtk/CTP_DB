@@ -22,7 +22,6 @@ bool connectMongo(char *addr)
 {
     try
     {
-        Sleep(5000);
         mCon = new mongo::DBClientConnection();
         mCon->connect(addr);
         cout << "连接数据库成功" << endl;
@@ -42,7 +41,7 @@ bool connectCTP(char *server)
     con = new Connection();
     if (CheckIsConnect())
     {
-        con->readInifile(".\\server.ini", server);
+        con->readInifile("E:\\workplace\\CTP_DB\\Debug\\server.ini", server);
         con->td->Connect(con->streamPath,
             con->tdServer,
             con->brokerId,

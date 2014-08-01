@@ -75,8 +75,6 @@ void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThos
     b.append("PreOpenInterest", pDepthMarketData->PreOpenInterest > INF ? -1 : pDepthMarketData->PreOpenInterest);
     b.append("OpenInterest", pDepthMarketData->OpenInterest > INF ? -1 : pDepthMarketData->OpenInterest);
     b.append("SettlementPrice", pDepthMarketData->SettlementPrice > INF ? -1 : pDepthMarketData->SettlementPrice);
-    b.append("ExchangeID", pDepthMarketData->ExchangeID);
-    b.append("ExchangeInstID", pDepthMarketData->ExchangeInstID);
     mCon->insert(database, b.obj());
     cout << pDepthMarketData->InstrumentID << "-----" << pDepthMarketData->UpdateTime;
     cout << "-----" << pDepthMarketData->TradingDay << endl;
@@ -161,15 +159,7 @@ void __stdcall FunctionCallBackSet::OnRspQryInstrumentMarginRate(void* pTraderAp
 
 void __stdcall FunctionCallBackSet::OnRspQryInvestorPosition(void* pTraderApi, CThostFtdcInvestorPositionField *pInvestorPosition, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    /*CLock cl(&m_csPosition);
-    if (pInvestorPosition->Position == 0)
-    {
-        m_position.erase(make_pair(pInvestorPosition->InstrumentID, pInvestorPosition->PosiDirection));
-    }
-    else
-    {
-        m_position[make_pair(pInvestorPosition->InstrumentID, pInvestorPosition->PosiDirection)] = *pInvestorPosition;
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnRspQryInvestorPositionDetail(void* pTraderApi, CThostFtdcInvestorPositionDetailField *pInvestorPositionDetail, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
@@ -179,41 +169,17 @@ void __stdcall FunctionCallBackSet::OnRspQryInvestorPositionDetail(void* pTrader
 
 void __stdcall FunctionCallBackSet::OnRspQryOrder(void* pTraderApi, CThostFtdcOrderField *pOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    /*CLock cl(&v_csErrorInfo);
-    if (pRspInfo->ErrorID == 0)
-    {
-        v_errorInfo.push_back(string("[OnRspQryOrder]: ") + string("查询委托单成功!"));
-    }
-    else
-    {
-        v_errorInfo.push_back(string("[OnRspQryOrder]: ") + string(pRspInfo->ErrorMsg));
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnRspQryTrade(void* pTraderApi, CThostFtdcTradeField *pTrade, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    /*CLock cl(&v_csErrorInfo);
-    if (pRspInfo->ErrorID == 0)
-    {
-        v_errorInfo.push_back(string("[OnRspQryTrade]: ") + string("查询成交成功!"));
-    }
-    else
-    {
-        v_errorInfo.push_back(string("[OnRspQryTrade]: ") + string(pRspInfo->ErrorMsg));
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnRspQryTradingAccount(void* pTraderApi, CThostFtdcTradingAccountField *pTradingAccount, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    /*CLock cl(&v_csErrorInfo);
-    if (pRspInfo->ErrorID == 0)
-    {
-        v_errorInfo.push_back(string("[OnRspQryTradingAccount]: ") + string("查询交易账户成功!"));
-    }
-    else
-    {
-        v_errorInfo.push_back(string("[OnRspQryTradingAccount]: ") + string(pRspInfo->ErrorMsg));
-    }*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnRtnInstrumentStatus(void* pTraderApi, CThostFtdcInstrumentStatusField *pInstrumentStatus)
@@ -223,9 +189,7 @@ void __stdcall FunctionCallBackSet::OnRtnInstrumentStatus(void* pTraderApi, CTho
 
 void __stdcall FunctionCallBackSet::OnRtnOrder(void* pTraderApi, CThostFtdcOrderField *pOrder)
 {
-    /*CLock cl(&m_csOrders);
-    pair<int, pair<int, string> > ref = make_pair(pOrder->FrontID, make_pair(pOrder->SessionID, pOrder->OrderRef));
-    m_orders[ref] = *pOrder;*/
+
 }
 
 void __stdcall FunctionCallBackSet::OnRtnTrade(void* pTraderApi, CThostFtdcTradeField *pTrade)
