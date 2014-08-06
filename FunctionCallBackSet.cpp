@@ -13,11 +13,17 @@ History: see git log
 #include <iostream>
 #include <string>
 
+//是否为订阅第一根tick
+#define ISFIRST 5
+
 using namespace mongo;
+using namespace bson;
+using namespace std;
 
 extern mongo::DBClientConnection *mCon;
 extern Connection *con;
 extern string database;
+extern string instdatabase;
 extern double INF;
 
 //是否已获取合约
@@ -35,24 +41,15 @@ CRITICAL_SECTION FunctionCallBackSet::v_csInstInfo;
 vector<CThostFtdcInstrumentField> FunctionCallBackSet::v_instInfo;
 string FunctionCallBackSet::strAllIns;
 
-//合约行情信息
-CRITICAL_SECTION FunctionCallBackSet::m_csMarketData;
-map<string, CThostFtdcDepthMarketDataField> FunctionCallBackSet::m_marketData;
-
-//有效报单信息
-CRITICAL_SECTION FunctionCallBackSet::m_csOrders;
-map<pair<int, pair<int, string> >, CThostFtdcOrderField> FunctionCallBackSet::m_orders;
-
-//持仓信息
-CRITICAL_SECTION FunctionCallBackSet::m_csPosition;
-map<pair<string, char>, CThostFtdcInvestorPositionField> FunctionCallBackSet::m_position;
-
-//错误信息
-CRITICAL_SECTION FunctionCallBackSet::v_csErrorInfo;
-vector<string> FunctionCallBackSet::v_errorInfo;
 
 void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
+    static map<string, int> ok;
+    if (ok[pDepthMarketData->InstrumentID] != ISFIRST)
+    {
+        ok[pDepthMarketData->InstrumentID] = ISFIRST;
+        return;
+    }
     BSONObjBuilder b;
     b.appendDate("UpdateTime", Date_t(GetEpochTime(con->td->m_RspUserLogin.TradingDay, pDepthMarketData->UpdateTime, pDepthMarketData->UpdateMillisec)));
     b.append("InstrumentID", pDepthMarketData->InstrumentID);
@@ -76,8 +73,58 @@ void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThos
     b.append("OpenInterest", pDepthMarketData->OpenInterest > INF ? -1 : pDepthMarketData->OpenInterest);
     b.append("SettlementPrice", pDepthMarketData->SettlementPrice > INF ? -1 : pDepthMarketData->SettlementPrice);
     mCon->insert(database, b.obj());
-    cout << pDepthMarketData->InstrumentID << "-----" << pDepthMarketData->UpdateTime;
-    cout << "-----" << pDepthMarketData->TradingDay << endl;
+}
+
+void __stdcall FunctionCallBackSet::OnRspQryInstrument(void* pTraderApi, CThostFtdcInstrumentField *pInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    CLock cl(&v_csInstInfo);
+
+    auto_ptr<DBClientCursor> cursor =
+        mCon->query(instdatabase, QUERY("InstrumentID" << pInstrument->InstrumentID));
+    if (cursor->itcount() == 0)
+    {
+        BSONObjBuilder b;
+        b.append("InstrumentID", pInstrument->InstrumentID);
+        b.append("ExchangeID", pInstrument->ExchangeID);
+        b.append("InstrumnetName", GBKToUTF8(pInstrument->InstrumentName));
+        b.append("ExchangeInstID", pInstrument->ExchangeInstID);
+        b.append("ProductID", pInstrument->ProductID);
+        b.append("ProductClass", pInstrument->ProductClass);
+        b.append("DeliveryYear", pInstrument->DeliveryYear);
+        b.append("DeliveryMonth", pInstrument->DeliveryMonth);
+        b.append("MaxMarketOrderVolume", pInstrument->MaxMarketOrderVolume);
+        b.append("MinMarketOrderVolume", pInstrument->MinMarketOrderVolume);
+        b.append("MaxLimitOrderVolume", pInstrument->MaxLimitOrderVolume);
+        b.append("MinLimitOrderVolume", pInstrument->MinLimitOrderVolume);
+        b.append("VolumeMultiple", pInstrument->VolumeMultiple);
+        b.append("PriceTick", pInstrument->PriceTick);
+        b.append("CreateDate", pInstrument->CreateDate);
+        b.append("OpenDate", pInstrument->OpenDate);
+        b.append("ExpireDate", pInstrument->ExpireDate);
+        b.append("StartDelivDate", pInstrument->StartDelivDate);
+        b.append("EndDelivDate", pInstrument->EndDelivDate);
+        b.append("InstLifePhase", pInstrument->InstLifePhase);
+        b.append("IsTrading", pInstrument->IsTrading);
+        b.append("PositionType", pInstrument->PositionType);
+        b.append("PositionDateType", pInstrument->PositionDateType);
+        b.append("LongMarginRatio", pInstrument->LongMarginRatio);
+        b.append("ShortMarginRatio", pInstrument->ShortMarginRatio);
+        b.append("MaxMarginSideAlgorithm", pInstrument->MaxMarginSideAlgorithm);
+        mCon->insert(instdatabase, b.obj());
+    }
+
+
+
+    strAllIns += pInstrument->InstrumentID;
+    strAllIns += ';';
+    v_instInfo.push_back(*pInstrument);
+    if (v_instInfo.size() >= 100)
+    {
+        SetEvent(h_hasInst);
+        bIsGetInst = true;
+    }
+
+
 }
 
 void __stdcall FunctionCallBackSet::OnConnect(void* pApi, CThostFtdcRspUserLoginField *pRspUserLogin, ConnectionStatus result)
@@ -129,22 +176,6 @@ void __stdcall FunctionCallBackSet::OnRspOrderInsert(void* pTraderApi, CThostFtd
 void __stdcall FunctionCallBackSet::OnRspQryDepthMarketData(void* pTraderApi, CThostFtdcDepthMarketDataField *pDepthMarketData, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     
-}
-
-void __stdcall FunctionCallBackSet::OnRspQryInstrument(void* pTraderApi, CThostFtdcInstrumentField *pInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    CLock cl(&v_csInstInfo);
-
-
-    strAllIns += pInstrument->InstrumentID;
-    strAllIns += ';';
-    v_instInfo.push_back(*pInstrument);
-    if (v_instInfo.size() >= 100)
-    {
-        SetEvent(h_hasInst);
-        bIsGetInst = true;
-    }
-
 }
 
 void __stdcall FunctionCallBackSet::OnRspQryInstrumentCommissionRate(void* pTraderApi, CThostFtdcInstrumentCommissionRateField *pInstrumentCommissionRate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)

@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 #include <ctime>
+#include <Windows.h>
 using namespace std;
 
 //输入路径，生成多级目录
@@ -20,4 +21,8 @@ void GetOnFrontDisconnectedMsg(CThostFtdcRspInfoField* pRspInfo);
 
 //转换交易所时间到unix epoch time
 time_t GetEpochTime(string TradingDay, string UpdateTime, int milisecond);
+
+//转换GBK到UTF8
+string GBKToUTF8(const char* strGBK);
+
 #endif

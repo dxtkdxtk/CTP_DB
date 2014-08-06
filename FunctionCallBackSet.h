@@ -44,22 +44,6 @@ public:
     static vector<CThostFtdcInstrumentField> v_instInfo;
     static string strAllIns;
 
-    //当前合约行情信息
-    static CRITICAL_SECTION m_csMarketData;
-    static map<string, CThostFtdcDepthMarketDataField> m_marketData;
-
-    //所有报单
-    static CRITICAL_SECTION m_csOrders;
-    static map<pair<int, pair<int, string> >, CThostFtdcOrderField> m_orders;
-
-    //所有持仓
-    static CRITICAL_SECTION m_csPosition;
-    static map<pair<string, char>, CThostFtdcInvestorPositionField> m_position;
-
-    //错误信息
-    static CRITICAL_SECTION v_csErrorInfo;
-    static vector<string> v_errorInfo;
-
     FunctionCallBackSet()
     {
         bIsGetInst = false;
@@ -69,44 +53,15 @@ public:
         h_hasInst = CreateEvent(NULL, FALSE, FALSE, NULL);
         strAllIns = "";
         v_instInfo.clear();
-        m_marketData.clear();
-        m_orders.clear();
-        m_position.clear();
-        v_errorInfo.clear();
         InitializeCriticalSection(&v_csInstInfo);
-        InitializeCriticalSection(&m_csMarketData);
-        InitializeCriticalSection(&m_csOrders);
-        InitializeCriticalSection(&m_csPosition);
-        InitializeCriticalSection(&v_csErrorInfo);
     }
     ~FunctionCallBackSet()
     {
         CloseHandle(h_connected);
         CloseHandle(h_hasInst);
         DeleteCriticalSection(&v_csInstInfo);
-        DeleteCriticalSection(&m_csMarketData);
-        DeleteCriticalSection(&m_csOrders);
-        DeleteCriticalSection(&m_csPosition);
-        DeleteCriticalSection(&v_csErrorInfo);
     }
-    //获取行情信息
-    CThostFtdcDepthMarketDataField &GetMarketData(string ins)
-    {
-        CLock cl(&m_csMarketData);
-        return m_marketData[ins];
-    }
-    //获取有效单信息
-    map<pair<int, pair<int, string> >, CThostFtdcOrderField> &GetOrderInfo()
-    {
-        CLock cl(&m_csOrders);
-        return m_orders;
-    }
-    //获取持仓信息
-    map<pair<string, char>, CThostFtdcInvestorPositionField> &GetPosition()
-    {
-        CLock cl(&m_csPosition);
-        return m_position;
-    }
+
     //获取当日交易合约信息
     vector<CThostFtdcInstrumentField> &GetInstInfo()
     {
@@ -114,11 +69,6 @@ public:
         return v_instInfo;
     }
 
-    vector<string> &GetErrorInfo()
-    {
-        CLock cl(&v_csErrorInfo);
-        return v_errorInfo;
-    }
     static void __stdcall OnConnect(void* pApi, CThostFtdcRspUserLoginField *pRspUserLogin, ConnectionStatus result);//连接后的结果状态
     static void __stdcall OnDisconnect(void* pApi, CThostFtdcRspInfoField *pRspInfo, ConnectionStatus step);//出错时所处的状态
     static void __stdcall OnErrRtnOrderAction(void* pTraderApi, CThostFtdcOrderActionField *pOrderAction, CThostFtdcRspInfoField *pRspInfo);

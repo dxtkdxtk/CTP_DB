@@ -12,13 +12,19 @@ Connection *con;
 mongo::DBClientConnection *mCon;
 double INF = 1e+100;
 
+string database = "MarketData.tick";
+string instdatabase = "MarketData.instrument";
+string ip = "localhost";
+string server = "simServer";
+string inipath = ".\\server.ini";
+
 bool CheckIsConnect()
 {
     return !(NULL == con);
 }
 
 //connect mongo db
-bool connectMongo(char *addr)
+bool connectMongo(const string addr)
 {
     try
     {
@@ -36,12 +42,12 @@ bool connectMongo(char *addr)
     return true;
 }
 
-bool connectCTP(char *server)
+bool connectCTP(const string &inipath, const char *server)
 {
     con = new Connection();
     if (CheckIsConnect())
     {
-        con->readInifile("E:\\workplace\\CTP_DB\\Debug\\server.ini", server);
+        con->readInifile(inipath.c_str(), server);
         con->td->Connect(con->streamPath,
             con->tdServer,
             con->brokerId,
@@ -85,3 +91,11 @@ bool connectCTP(char *server)
     }
 }
 
+//ÏÔÊ¾°ïÖúÎÄ¼ş
+void showhelp()
+{
+    cout << "parameter: " << endl;
+    cout << "    --help: CTP_DB help" << endl;
+    cout << "    --real: connect CTP realServer(default is simServer)." << endl;
+    cout << "    --ip [ip address]: connect mongo database from ip address(default is localhost)." << endl;
+}
