@@ -25,7 +25,7 @@ extern Connection *con;
 extern string database;
 extern string instdatabase;
 extern double INF;
-
+extern SYSTEMTIME st;
 //是否已获取合约
 bool FunctionCallBackSet::bIsGetInst;
 bool FunctionCallBackSet::bIsTdConnected;
@@ -51,7 +51,7 @@ void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThos
         return;
     }
     BSONObjBuilder b;
-    b.appendDate("UpdateTime", Date_t(GetEpochTime(con->td->m_RspUserLogin.TradingDay, pDepthMarketData->UpdateTime, pDepthMarketData->UpdateMillisec)));
+    b.appendDate("UpdateTime", Date_t(GetEpochTime(st, pDepthMarketData->UpdateTime, pDepthMarketData->UpdateMillisec)));
     b.append("InstrumentID", pDepthMarketData->InstrumentID);
     b.append("OpenPrice", pDepthMarketData->OpenPrice > INF ? -1 : pDepthMarketData->OpenPrice);
     b.append("HighestPrice", pDepthMarketData->HighestPrice > INF ? -1 : pDepthMarketData->HighestPrice);
@@ -86,7 +86,7 @@ void __stdcall FunctionCallBackSet::OnRspQryInstrument(void* pTraderApi, CThostF
         BSONObjBuilder b;
         b.append("InstrumentID", pInstrument->InstrumentID);
         b.append("ExchangeID", pInstrument->ExchangeID);
-        b.append("InstrumnetName", GBKToUTF8(pInstrument->InstrumentName));
+        b.append("InstrumentName", GBKToUTF8(pInstrument->InstrumentName));
         b.append("ExchangeInstID", pInstrument->ExchangeInstID);
         b.append("ProductID", pInstrument->ProductID);
         b.append("ProductClass", pInstrument->ProductClass);

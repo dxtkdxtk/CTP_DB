@@ -11,7 +11,7 @@ using namespace mongo;
 Connection *con;
 mongo::DBClientConnection *mCon;
 double INF = 1e+100;
-
+SYSTEMTIME st;
 string database = "MarketData.tick";
 string instdatabase = "MarketData.instrument";
 string ip = "localhost";
@@ -59,10 +59,10 @@ bool connectCTP(const string &inipath, const char *server)
         {
             delete con;
             con = NULL;
-            cout << "交易端连接失败\n" << endl;
+            cout << "交易端连接失败" << endl;
             return false;
         }
-        cout << "交易端连接成功\n" << endl;
+        cout << "交易端连接成功" << endl;
         con->md->Connect(con->streamPath,
             con->mdServer,
             con->brokerId,
@@ -76,7 +76,7 @@ bool connectCTP(const string &inipath, const char *server)
             cout << "行情端连接失败" << endl;
             return false;
         }
-        cout << "行情端连接成功\n" << endl;
+        cout << "行情端连接成功" << endl;
         con->td->ReqQryInstrument("");
         Sleep(3000);
         cout << "获取合约成功" << endl;

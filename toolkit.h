@@ -20,7 +20,7 @@ void GetSetFromString(const char* szString,const char* seps,vector<string>& vct,
 void GetOnFrontDisconnectedMsg(CThostFtdcRspInfoField* pRspInfo);
 
 //转换交易所时间到unix epoch time
-time_t GetEpochTime(string TradingDay, string UpdateTime, int milisecond);
+time_t GetEpochTime(SYSTEMTIME st, string UpdateTime, int milisecond);
 
 //转换GBK到UTF8
 string GBKToUTF8(const char* strGBK);

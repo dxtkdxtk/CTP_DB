@@ -55,11 +55,15 @@ int main(int argc, char *argv[])
         }
 
     }
+    
     if (!ishelp)
     {
+        GetSystemTime(&st);
+        cout << "交易日：" << st.wYear*10000 + st.wMonth*100 + st.wDay << endl;
         while (!connectMongo(ip));
         while (!connectCTP(inipath, server.c_str()));
         cout << "数据库写入中" << endl;
+
         string s;
         while (1)
         {
