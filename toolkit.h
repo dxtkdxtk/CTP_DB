@@ -2,12 +2,17 @@
 #define _TOOLKIT_H_
 
 #include "ThostFtdcUserApiStruct.h"
+#include "CLock.h"
+#include "CTPStruct.h"
 
 #include <vector>
 #include <set>
 #include <string>
 #include <ctime>
 #include <Windows.h>
+#include <fstream>
+#include <iostream>
+
 using namespace std;
 
 //输入路径，生成多级目录
@@ -24,5 +29,12 @@ time_t GetEpochTime(SYSTEMTIME st, string UpdateTime, int milisecond);
 
 //转换GBK到UTF8
 string GBKToUTF8(const char* strGBK);
+
+//日志显示
+void PrintLog(fstream &file, const char *info);
+
+//转换连接信息
+string ConnectionStatusMsg(ConnectionStatus status);
+
 
 #endif

@@ -26,6 +26,9 @@ extern string database;
 extern string instdatabase;
 extern double INF;
 extern SYSTEMTIME st;
+extern string logpath;
+extern fstream filestream;
+
 //是否已获取合约
 bool FunctionCallBackSet::bIsGetInst;
 bool FunctionCallBackSet::bIsTdConnected;
@@ -129,23 +132,47 @@ void __stdcall FunctionCallBackSet::OnRspQryInstrument(void* pTraderApi, CThostF
 
 void __stdcall FunctionCallBackSet::OnConnect(void* pApi, CThostFtdcRspUserLoginField *pRspUserLogin, ConnectionStatus result)
 {
-    static bool isTd = false;
-    if (result == E_confirmed)
+    string msg;
+    if (pApi == con->td)
     {
-        bIsTdConnected = true;
-        SetEvent(h_connected);
-        isTd = true;
+        msg = "交易端状态->";
+        PrintLog(filestream, (msg + ConnectionStatusMsg(result)).c_str());
+        if (result == E_confirmed)
+        {
+            bIsTdConnected = true;
+            SetEvent(h_connected);
+            PrintLog(filestream, "交易端连接成功");
+        }
     }
-    else if (isTd && result == E_logined)
+    else if (pApi == con->md)
     {
-        bIsMdConnected = true;
-        SetEvent(h_connected);
+        msg = "行情端状态->";
+        PrintLog(filestream, (msg + ConnectionStatusMsg(result)).c_str());
+        if (result == E_logined)
+        {
+            bIsMdConnected = true;
+            SetEvent(h_connected);
+            PrintLog(filestream, "行情端连接成功");
+        }
     }
 }
 
 void __stdcall FunctionCallBackSet::OnDisconnect(void* pApi, CThostFtdcRspInfoField *pRspInfo, ConnectionStatus step)
 {
-
+    string msg;
+    if (pApi == con->md)
+    {
+        msg = "行情端失去连接，原因：";
+        msg += pRspInfo->ErrorMsg;
+        PrintLog(filestream, msg.c_str());
+    }
+        
+    else if (pApi == con->td)
+    {
+        msg = "交易端失去连接，原因：";
+        msg += pRspInfo->ErrorMsg;
+        PrintLog(filestream, msg.c_str());
+    }
 }
 
 void __stdcall FunctionCallBackSet::OnErrRtnOrderAction(void* pTraderApi, CThostFtdcOrderActionField *pOrderAction, CThostFtdcRspInfoField *pRspInfo)

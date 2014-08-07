@@ -1,6 +1,8 @@
 #ifndef CTPSTRUCT_H
 #define CTPSTRUCT_H
 #include "traderapi\ThostFtdcUserApiStruct.h"
+#include<string>
+using namespace std;
 
 //Á¬½Ó×´Ì¬
 enum ConnectionStatus
@@ -40,10 +42,6 @@ typedef void(__stdcall *fnOnRtnDepthMarketData)(void* pMdUserApi, CThostFtdcDept
 typedef void(__stdcall *fnOnRtnInstrumentStatus)(void* pTraderApi, CThostFtdcInstrumentStatusField *pInstrumentStatus);
 typedef void(__stdcall *fnOnRtnOrder)(void* pTraderApi, CThostFtdcOrderField *pOrder);
 typedef void(__stdcall *fnOnRtnTrade)(void* pTraderApi, CThostFtdcTradeField *pTrade);
-
-
-
-
 
 #endif
 

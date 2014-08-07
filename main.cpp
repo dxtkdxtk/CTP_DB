@@ -4,6 +4,7 @@ int main(int argc, char *argv[])
 {
     //调用参数配置
     bool ishelp = false;
+    InitializeCriticalSection(&cs_fileWriting);
     if (argc > 1)
     {
         for (int i = 1; i < argc;)
@@ -11,13 +12,15 @@ int main(int argc, char *argv[])
             if (strcmp(argv[i], "--real") == 0)
             {
                 server = "realServer";
+                database = "MarketData.tick";
+                instdatabase = "MarketData.instrument";
                 ++i;
             }
             else if (strcmp(argv[i], "--ip") == 0)
             {
                 if (argc < i + 2)
                 {
-                    cout << "parameter error" << endl;
+                    cout << "参数错误" << endl;
                     return -1;
                 }
                 ip = argv[i + 1];
@@ -33,7 +36,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    cout << "invalid help call!" << endl;
+                    cout << "错误的help调用" << endl;
                     return -1;
                 }
             }
@@ -41,15 +44,25 @@ int main(int argc, char *argv[])
             {
                 if (argc < i + 2)
                 {
-                    cout << "parameter error" << endl;
+                    cout << "参数错误" << endl;
                     return -1;
                 }
                 inipath = argv[i + 1];
                 i += 2;
             }
+            else if (strcmp(argv[i], "--logpath") == 0)
+            {
+                if (argc < i + 2)
+                {
+                    cout << "参数错误" << endl;
+                    return -1;
+                }
+                logpath = argv[i + 1];
+                i += 2;
+            }
             else
             {
-                cout << "no matched option!" << endl;
+                cout << "没有找到指定操作" << endl;
                 return -1;
             }
         }
@@ -58,11 +71,18 @@ int main(int argc, char *argv[])
     
     if (!ishelp)
     {
-        GetSystemTime(&st);
-        cout << "交易日：" << st.wYear*10000 + st.wMonth*100 + st.wDay << endl;
+        GetLocalTime(&st);
+        stringstream ss, sss;
+        ss << st.wYear * 10000 + st.wMonth * 100 + st.wDay;
+        logpath = logpath + string(ss.str()) + ".log"; 
+        filestream.open(logpath, ios::app);
+        sss<< "获取当前交易日: " << st.wYear*10000 + st.wMonth*100 + st.wDay;
+        string tradingdaytxt = string(sss.str());
+        PrintLog(filestream, tradingdaytxt.c_str());
+        
         while (!connectMongo(ip));
         while (!connectCTP(inipath, server.c_str()));
-        cout << "数据库写入中" << endl;
+        PrintLog(filestream, "数据接收开始运行");
 
         string s;
         while (1)
@@ -70,10 +90,14 @@ int main(int argc, char *argv[])
             cin >> s;
             if (s == "exit")
             {
-                cout << "数据库写入结束" << endl;
+                PrintLog(filestream, "数据接收退出");
+                DeleteCriticalSection(&cs_fileWriting);
+                filestream.close();
                 break;
             }
         }
     }
+    DeleteCriticalSection(&cs_fileWriting);
+    filestream.close();
     return 0;
 }

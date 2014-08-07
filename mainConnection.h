@@ -12,11 +12,14 @@ Connection *con;
 mongo::DBClientConnection *mCon;
 double INF = 1e+100;
 SYSTEMTIME st;
-string database = "MarketData.tick";
-string instdatabase = "MarketData.instrument";
+string database = "MarketData.testtick";
+string instdatabase = "MarketData.testinstrument";
 string ip = "localhost";
 string server = "simServer";
-string inipath = ".\\server.ini";
+string inipath = "F:\\mongodb\\data\\server.ini";
+string logpath = "F:\\mongodb\\data\\dblog\\";
+CRITICAL_SECTION cs_fileWriting;
+fstream filestream;
 
 bool CheckIsConnect()
 {
@@ -24,17 +27,17 @@ bool CheckIsConnect()
 }
 
 //connect mongo db
-bool connectMongo(const string addr)
+bool connectMongo(const string &addr)
 {
     try
     {
         mCon = new mongo::DBClientConnection();
         mCon->connect(addr);
-        cout << "连接数据库成功" << endl;
+        PrintLog(filestream, "连接数据库成功");
     }
     catch (const mongo::DBException &e)
     {
-        cout << "caught " << e.what() << endl;
+        PrintLog(filestream, e.what());
         delete mCon;
         mCon = NULL;
         return false;
@@ -59,10 +62,9 @@ bool connectCTP(const string &inipath, const char *server)
         {
             delete con;
             con = NULL;
-            cout << "交易端连接失败" << endl;
+            PrintLog(filestream, "连接交易端失败，正在重连");
             return false;
         }
-        cout << "交易端连接成功" << endl;
         con->md->Connect(con->streamPath,
             con->mdServer,
             con->brokerId,
@@ -73,20 +75,19 @@ bool connectCTP(const string &inipath, const char *server)
         {
             delete con;
             con = NULL;
-            cout << "行情端连接失败" << endl;
+            PrintLog(filestream, "连接行情端失败，正在重连");
             return false;
         }
-        cout << "行情端连接成功" << endl;
         con->td->ReqQryInstrument("");
         Sleep(3000);
-        cout << "获取合约成功" << endl;
+        PrintLog(filestream, "获取合约信息成功");
         con->md->Subscribe(con->callbackSet->strAllIns);
-        cout << "订阅合约成功" << endl;
+        PrintLog(filestream, "订阅合约成功");
         return true;
     }
     else
     {
-        cout << "连接分配失败" << endl;
+        PrintLog(filestream, "数据库连接空间开辟失败");
         return false;
     }
 }
@@ -94,8 +95,10 @@ bool connectCTP(const string &inipath, const char *server)
 //显示帮助文件
 void showhelp()
 {
-    cout << "parameter: " << endl;
-    cout << "    --help: CTP_DB help" << endl;
-    cout << "    --real: connect CTP realServer(default is simServer)." << endl;
-    cout << "    --ip [ip address]: connect mongo database from ip address(default is localhost)." << endl;
+    cout << "帮助: " << endl;
+    cout << "    --help: 显示帮助" << endl;
+    cout << "    --real: 连接realServer字段，即实盘账户" << endl;
+    cout << "    --ip [ip address]: 连接指定ip" << endl;
+    cout << "    --logpath [log path]: 指定日志路径，只需要指定文件夹，文件名系统自动设置" << endl;
+    cout << "    --inipath [inifile path]: 指定账户信息ini文件路径，需要指定具体ini文件" << endl;
 }

@@ -2,6 +2,7 @@
 
 #include <direct.h>
 
+extern CRITICAL_SECTION cs_fileWriting;
 void makedirs(const char* dir)
 {
 	if (NULL == dir)
@@ -116,4 +117,68 @@ string GBKToUTF8(const char* strGBK)
     if (wstr) delete[] wstr;
     if (str) delete[] str;
     return strTemp;
+}
+
+void PrintLog(fstream &file, const char *info)
+{
+    CLock cl(&cs_fileWriting);
+    SYSTEMTIME ST;
+    GetLocalTime(&ST);
+    string time = "[";
+    string tmp;
+    time += to_string(ST.wYear) + '-';
+    time += (tmp = to_string(ST.wMonth), tmp.size() == 1 ? string("0") + tmp : tmp) + '-';
+    time += (tmp = to_string(ST.wDay), tmp.size() == 1 ? string("0") + tmp : tmp) + 'T';
+    time += (tmp = to_string(ST.wHour), tmp.size() == 1 ? string("0") + tmp : tmp) + ':';
+    time += (tmp = to_string(ST.wMinute), tmp.size() == 1 ? string("0") + tmp : tmp) + ':';
+    time += (tmp = to_string(ST.wSecond), tmp.size() == 1 ? string("0") + tmp : tmp) + '.';
+    tmp = to_string(ST.wMilliseconds);
+    if (tmp.size() == 2)
+        tmp = string("0") + tmp;
+    else if (tmp.size() == 1)
+        tmp = string("00") + tmp;
+    time += tmp + "Z]: ";
+    file << time << info << endl;
+    cout << time << info << endl;
+}
+
+
+string ConnectionStatusMsg(ConnectionStatus status)
+{
+    string res;
+    switch (status)
+    {
+
+    case E_inited:
+            res = "已初始化";
+            break;
+    case E_connecting:
+            res = "连接中";
+            break;
+    case E_connected:
+            res = "连接成功";
+            break;
+    case E_authing:
+            res = "授权中";
+            break;
+    case E_authed:
+            res = "授权成功";
+            break;
+    case E_logining:
+            res = "登录中";
+            break;
+    case E_logined:
+            res = "登陆成功";
+            break;
+    case E_confirming:
+            res = "结算单确认中";
+            break;
+    case E_confirmed:
+            res = "结算单已经确认";
+            break;
+    case E_conn_max:
+            res = "连接达到最大值";
+            break;
+    }
+    return res;
 }
