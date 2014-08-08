@@ -87,17 +87,20 @@ int main(int argc, char *argv[])
         string s;
         while (1)
         {
-            cin >> s;
-            if (s == "exit")
+            PrintLog(filestream, "发送程序心跳，正常运行中");
+            Sleep(995 * 900);
+            SYSTEMTIME hbt;
+            GetLocalTime(&hbt);
+            if (hbt.wHour == 2 && hbt.wMinute > 35)
             {
-                PrintLog(filestream, "数据接收退出");
-                DeleteCriticalSection(&cs_fileWriting);
-                filestream.close();
+                PrintLog(filestream, "行情已经结束，启动退出程序");
                 break;
             }
+            
         }
+        filestream.close();
+        PrintLog(filestream, "程序退出成功");
     }
     DeleteCriticalSection(&cs_fileWriting);
-    filestream.close();
     return 0;
 }
