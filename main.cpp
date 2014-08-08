@@ -88,12 +88,17 @@ int main(int argc, char *argv[])
         while (1)
         {
             PrintLog(filestream, "发送程序心跳，正常运行中");
-            Sleep(995 * 900);
+            Sleep(1000 * 900 - 5);
             SYSTEMTIME hbt;
             GetLocalTime(&hbt);
-            if (hbt.wHour == 2 && hbt.wMinute > 35)
+            if (hbt.wHour == 15 && hbt.wMinute > 20)
             {
-                PrintLog(filestream, "行情已经结束，启动退出程序");
+                PrintLog(filestream, "日盘行情已经结束，启动退出程序");
+                break;
+            }
+            else if (hbt.wHour == 2 && hbt.wMinute > 35)
+            {
+                PrintLog(filestream, "夜盘行情已经结束，启动退出程序");
                 break;
             }
             
