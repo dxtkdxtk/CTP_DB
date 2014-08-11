@@ -80,31 +80,12 @@ int main(int argc, char *argv[])
         string tradingdaytxt = string(sss.str());
         PrintLog(filestream, tradingdaytxt.c_str());
         
-        while (!connectMongo(ip));
-        while (!connectCTP(inipath, server.c_str()));
-        PrintLog(filestream, "数据接收开始运行");
+        void* h_main = CreateThread(NULL, 0, MainThread, NULL, 0, NULL);
+        void* h_heart = CreateThread(NULL, 0, HeartBeatThread, NULL, 0, NULL);
+        WaitForSingleObject(h_heart, INFINITE);
 
-        string s;
-        while (1)
-        {
-            PrintLog(filestream, "发送程序心跳，正常运行中");
-            Sleep(1000 * 900 - 5);
-            SYSTEMTIME hbt;
-            GetLocalTime(&hbt);
-            if (hbt.wHour == 15 && hbt.wMinute > 20)
-            {
-                PrintLog(filestream, "日盘行情已经结束，启动退出程序");
-                break;
-            }
-            else if (hbt.wHour == 2 && hbt.wMinute > 35)
-            {
-                PrintLog(filestream, "夜盘行情已经结束，启动退出程序");
-                break;
-            }
-            
-        }
         filestream.close();
-        PrintLog(filestream, "程序退出成功");
+        
     }
     DeleteCriticalSection(&cs_fileWriting);
     return 0;

@@ -5,6 +5,8 @@
 
 #include <iostream>
 #include <ctime>
+#include <Windows.h>
+#include <process.h>
 
 using namespace mongo;
 
@@ -101,4 +103,39 @@ void showhelp()
     cout << "    --ip [ip address]: 连接指定ip" << endl;
     cout << "    --logpath [log path]: 指定日志路径，只需要指定文件夹，文件名系统自动设置" << endl;
     cout << "    --inipath [inifile path]: 指定账户信息ini文件路径，需要指定具体ini文件" << endl;
+}
+
+//主行情接收线程
+DWORD WINAPI MainThread(LPVOID pM)
+{
+    while (!connectMongo(ip));
+    while (!connectCTP(inipath, server.c_str()));
+    PrintLog(filestream, "数据接收开始运行");
+    return 0;
+}
+
+//程序心跳线程
+DWORD WINAPI HeartBeatThread(LPVOID pM)
+{
+    PrintLog(filestream, "程序心跳线程已启动");
+    while (1)
+    {
+        Sleep(1000 * 900 - 3);
+        PrintLog(filestream, "发送程序心跳，正常运行中");
+        SYSTEMTIME hbt;
+        GetLocalTime(&hbt);
+        if (hbt.wHour == 15 && hbt.wMinute > 20)
+        {
+            PrintLog(filestream, "日盘行情已经结束，启动退出程序");
+            break;
+        }
+        else if (hbt.wHour == 2 && hbt.wMinute > 35)
+        {
+            PrintLog(filestream, "夜盘行情已经结束，启动退出程序");
+            break;
+        }
+
+    }
+    PrintLog(filestream, "程序退出成功");
+    return 0;
 }
