@@ -5,6 +5,7 @@ int main(int argc, char *argv[])
     //调用参数配置
     bool ishelp = false;
     InitializeCriticalSection(&cs_fileWriting);
+    InitializeCriticalSection(&cs_market);
     if (argc > 1)
     {
         for (int i = 1; i < argc;)
@@ -72,6 +73,7 @@ int main(int argc, char *argv[])
     if (!ishelp)
     {
         GetLocalTime(&st);
+        v_marketObj.clear();
         stringstream ss, sss;
         ss << st.wYear * 10000 + st.wMonth * 100 + st.wDay;
         logpath = logpath + string(ss.str()) + ".log"; 
@@ -83,10 +85,12 @@ int main(int argc, char *argv[])
         void* h_main = CreateThread(NULL, 0, MainThread, NULL, 0, NULL);
         void* h_heart = CreateThread(NULL, 0, HeartBeatThread, NULL, 0, NULL);
         WaitForSingleObject(h_heart, INFINITE);
-
+        mCon->insert(database, v_marketObj);
+        v_marketObj.clear();
         filestream.close();
         
     }
     DeleteCriticalSection(&cs_fileWriting);
+    DeleteCriticalSection(&cs_market);
     return 0;
 }

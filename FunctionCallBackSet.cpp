@@ -28,7 +28,8 @@ extern double INF;
 extern SYSTEMTIME st;
 extern string logpath;
 extern fstream filestream;
-
+extern vector<BSONObj> v_marketObj;
+extern CRITICAL_SECTION cs_market;
 //是否已获取合约
 bool FunctionCallBackSet::bIsGetInst;
 bool FunctionCallBackSet::bIsTdConnected;
@@ -53,6 +54,7 @@ void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThos
         ok[pDepthMarketData->InstrumentID] = ISFIRST;
         return;
     }
+    CLock cl(&cs_market);
     BSONObjBuilder b;
     b.appendDate("UpdateTime", Date_t(GetEpochTime(st, pDepthMarketData->UpdateTime, pDepthMarketData->UpdateMillisec)));
     b.append("InstrumentID", pDepthMarketData->InstrumentID);
@@ -75,7 +77,12 @@ void __stdcall FunctionCallBackSet::OnRtnDepthMarketData(void* pMdUserApi, CThos
     b.append("PreOpenInterest", pDepthMarketData->PreOpenInterest > INF ? -1 : pDepthMarketData->PreOpenInterest);
     b.append("OpenInterest", pDepthMarketData->OpenInterest > INF ? -1 : pDepthMarketData->OpenInterest);
     b.append("SettlementPrice", pDepthMarketData->SettlementPrice > INF ? -1 : pDepthMarketData->SettlementPrice);
-    mCon->insert(database, b.obj());
+    v_marketObj.push_back(b.done());
+    if (v_marketObj.size() > 1000)
+    {
+        mCon->insert(database, v_marketObj);
+        v_marketObj.clear();
+    }
 }
 
 void __stdcall FunctionCallBackSet::OnRspQryInstrument(void* pTraderApi, CThostFtdcInstrumentField *pInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)

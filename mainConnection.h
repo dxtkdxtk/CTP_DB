@@ -22,7 +22,8 @@ string inipath = "F:\\mongodb\\data\\server.ini";
 string logpath = "F:\\mongodb\\data\\dblog\\";
 CRITICAL_SECTION cs_fileWriting;
 fstream filestream;
-
+vector<BSONObj> v_marketObj;
+CRITICAL_SECTION cs_market;
 bool CheckIsConnect()
 {
     return !(NULL == con);
