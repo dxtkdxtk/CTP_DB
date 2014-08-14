@@ -22,8 +22,6 @@ string inipath = "F:\\mongodb\\data\\server.ini";
 string logpath = "F:\\mongodb\\data\\dblog\\";
 CRITICAL_SECTION cs_fileWriting;
 fstream filestream;
-vector<BSONObj> v_marketObj;
-CRITICAL_SECTION cs_market;
 bool CheckIsConnect()
 {
     return !(NULL == con);
@@ -121,7 +119,7 @@ DWORD WINAPI HeartBeatThread(LPVOID pM)
     PrintLog(filestream, "程序心跳线程已启动");
     while (1)
     {
-        Sleep(1000 * 900 - 3);
+        Sleep(1000 * 300 - 3);
         PrintLog(filestream, "发送程序心跳，正常运行中");
         SYSTEMTIME hbt;
         GetLocalTime(&hbt);
